@@ -195,3 +195,77 @@ export const channelMessages = {
     },
   ],
 };
+
+export const directMessageHistory = {
+  alex: [
+    {
+      id: "alex-001",
+      userId: "alex",
+      userName: "Alex",
+      initials: "A",
+      message:
+        "Hey Mukund! How is the TeamFlow prototype coming along?",
+      timestamp: "9:40 AM",
+    },
+    {
+      id: "alex-002",
+      userId: "user-001",
+      userName: "Mukund Sah",
+      initials: "MS",
+      message:
+        "It's going really well. I'm finishing the messaging features today.",
+      timestamp: "9:43 AM",
+    },
+    {
+      id: "alex-003",
+      userId: "alex",
+      userName: "Alex",
+      initials: "A",
+      message:
+        "Great! The channel interface already looks really clean.",
+      timestamp: "9:45 AM",
+    },
+  ],
+
+  rahul: [
+    {
+      id: "rahul-001",
+      userId: "rahul",
+      userName: "Rahul",
+      initials: "R",
+      message:
+        "I'll review the latest development updates today.",
+      timestamp: "10:15 AM",
+    },
+    {
+      id: "rahul-002",
+      userId: "user-001",
+      userName: "Mukund Sah",
+      initials: "MS",
+      message:
+        "Perfect. Let me know if you find anything that needs attention.",
+      timestamp: "10:18 AM",
+    },
+  ],
+
+  sarah: [
+    {
+      id: "sarah-001",
+      userId: "sarah",
+      userName: "Sarah",
+      initials: "S",
+      message:
+        "The updated dashboard design is ready for review.",
+      timestamp: "11:05 AM",
+    },
+    {
+      id: "sarah-002",
+      userId: "user-001",
+      userName: "Mukund Sah",
+      initials: "MS",
+      message:
+        "Looks great! I'll make sure the implementation follows the design.",
+      timestamp: "11:09 AM",
+    },
+  ],
+};

@@ -19,6 +19,8 @@ import {
 function Sidebar({
   selectedChannel,
   onChannelSelect,
+  selectedDM,
+  onDMSelect,
 }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -28,9 +30,20 @@ function Sidebar({
     navigate("/login");
   };
 
+  const handleChannelSelect = (channel) => {
+    onChannelSelect(channel);
+    onDMSelect(null);
+  };
+
+  const handleDMSelect = (user) => {
+    onDMSelect(user);
+  };
+
   return (
     <aside className="sidebar">
-      {/* Workspace Header */}
+      {/* =========================
+          WORKSPACE HEADER
+          ========================= */}
       <div className="workspace-header">
         <div className="workspace-logo">
           {workspace.initials}
@@ -44,7 +57,9 @@ function Sidebar({
         <ChevronDown size={17} />
       </div>
 
-      {/* Channels */}
+      {/* =========================
+          CHANNELS
+          ========================= */}
       <div className="sidebar-section">
         <div className="sidebar-section-header">
           <span>CHANNELS</span>
@@ -59,7 +74,8 @@ function Sidebar({
 
         {channels.map((channel) => {
           const isActive =
-            selectedChannel?.id === channel.id;
+            selectedChannel?.id === channel.id &&
+            !selectedDM;
 
           return (
             <button
@@ -69,7 +85,7 @@ function Sidebar({
                 isActive ? "active" : ""
               }`}
               onClick={() =>
-                onChannelSelect(channel)
+                handleChannelSelect(channel)
               }
             >
               <Hash size={17} />
@@ -79,7 +95,9 @@ function Sidebar({
         })}
       </div>
 
-      {/* Direct Messages */}
+      {/* =========================
+          DIRECT MESSAGES
+          ========================= */}
       <div className="sidebar-section">
         <div className="sidebar-section-header">
           <span>DIRECT MESSAGES</span>
@@ -92,22 +110,34 @@ function Sidebar({
           </button>
         </div>
 
-        {directMessages.map((user) => (
-          <button
-            key={user.id}
-            type="button"
-            className="sidebar-item"
-          >
-            <span
-              className={`presence-dot ${user.status}`}
-            />
+        {directMessages.map((user) => {
+          const isActive =
+            selectedDM?.id === user.id;
 
-            <span>{user.name}</span>
-          </button>
-        ))}
+          return (
+            <button
+              key={user.id}
+              type="button"
+              className={`sidebar-item ${
+                isActive ? "active" : ""
+              }`}
+              onClick={() =>
+                handleDMSelect(user)
+              }
+            >
+              <span
+                className={`presence-dot ${user.status}`}
+              />
+
+              <span>{user.name}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Bottom Section */}
+      {/* =========================
+          BOTTOM SECTION
+          ========================= */}
       <div className="sidebar-bottom">
         <button
           type="button"

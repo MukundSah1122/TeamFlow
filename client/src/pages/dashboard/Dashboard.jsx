@@ -13,17 +13,30 @@ import {
   recentConversations,
   channels,
   channelMessages,
+  directMessages,
+  directMessageHistory,
 } from "../../data/mockData";
 
 import Conversation from "../../components/chat/Conversation";
+import DirectMessage from "../../components/chat/DirectMessage";
 
-const MESSAGES_STORAGE_KEY = "teamflow_channel_messages";
+const MESSAGES_STORAGE_KEY =
+  "teamflow_channel_messages";
+
+const DM_MESSAGES_STORAGE_KEY =
+  "teamflow_dm_messages";
 
 function Dashboard() {
   const {
     selectedChannel,
     setSelectedChannel,
+    selectedDM,
+    setSelectedDM,
   } = useOutletContext();
+
+  // =========================
+  // CHANNEL MESSAGES
+  // =========================
 
   const [messagesByChannel, setMessagesByChannel] =
     useState(() => {
@@ -45,6 +58,75 @@ function Dashboard() {
       return channelMessages;
     });
 
+  // =========================
+  // DIRECT MESSAGES
+  // =========================
+
+const [messagesByDM, setMessagesByDM] =
+  useState(() => {
+    try {
+      const savedMessages = localStorage.getItem(
+        DM_MESSAGES_STORAGE_KEY
+      );
+
+      if (savedMessages) {
+        const parsedMessages =
+          JSON.parse(savedMessages);
+
+        const mergedMessages = {};
+
+        Object.keys(directMessageHistory).forEach(
+          (userId) => {
+            const seededMessages =
+              directMessageHistory[userId] || [];
+
+            const savedUserMessages =
+              parsedMessages[userId] || [];
+
+            const existingIds = new Set(
+              savedUserMessages.map(
+                (message) => message.id
+              )
+            );
+
+            const missingSeededMessages =
+              seededMessages.filter(
+                (message) =>
+                  !existingIds.has(message.id)
+              );
+
+            mergedMessages[userId] = [
+              ...missingSeededMessages,
+              ...savedUserMessages,
+            ];
+          }
+        );
+
+        Object.keys(parsedMessages).forEach(
+          (userId) => {
+            if (!mergedMessages[userId]) {
+              mergedMessages[userId] =
+                parsedMessages[userId];
+            }
+          }
+        );
+
+        return mergedMessages;
+      }
+    } catch (error) {
+      console.error(
+        "Failed to load saved DM messages:",
+        error
+      );
+    }
+
+    return directMessageHistory;
+  });
+
+  // =========================
+  // SAVE CHANNEL MESSAGES
+  // =========================
+
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -59,24 +141,97 @@ function Dashboard() {
     }
   }, [messagesByChannel]);
 
-  const handleSendMessage = (newMessage) => {
+  // =========================
+  // SAVE DM MESSAGES
+  // =========================
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        DM_MESSAGES_STORAGE_KEY,
+        JSON.stringify(messagesByDM)
+      );
+    } catch (error) {
+      console.error(
+        "Failed to save DM messages:",
+        error
+      );
+    }
+  }, [messagesByDM]);
+
+  // =========================
+  // SEND CHANNEL MESSAGE
+  // =========================
+
+  const handleSendChannelMessage = (
+    newMessage
+  ) => {
     setMessagesByChannel((currentMessages) => ({
       ...currentMessages,
+
       [selectedChannel.id]: [
-        ...(currentMessages[selectedChannel.id] || []),
+        ...(currentMessages[
+          selectedChannel.id
+        ] || []),
+
         newMessage,
       ],
     }));
   };
 
-  const currentMessages =
-    messagesByChannel[selectedChannel.id] || [];
+  // =========================
+  // SEND DIRECT MESSAGE
+  // =========================
+
+  const handleSendDM = (newMessage) => {
+    if (!selectedDM) {
+      return;
+    }
+
+    setMessagesByDM((currentMessages) => ({
+      ...currentMessages,
+
+      [selectedDM.id]: [
+        ...(currentMessages[selectedDM.id] || []),
+
+        newMessage,
+      ],
+    }));
+  };
+
+  // =========================
+  // CHANNEL SELECTION
+  // =========================
+
+  const handleChannelSelection = (channel) => {
+    setSelectedChannel(channel);
+    setSelectedDM(null);
+  };
+
+  // =========================
+  // DM SELECTION
+  // =========================
+
+  const handleDMSelection = (user) => {
+    setSelectedDM(user);
+  };
+
+  const currentChannelMessages =
+    messagesByChannel[
+      selectedChannel.id
+    ] || [];
+
+  const currentDMMessages =
+    selectedDM
+      ? messagesByDM[selectedDM.id] || []
+      : [];
 
   return (
     <div className="dashboard">
       {/* =========================
           DASHBOARD HEADER
           ========================= */}
+
       <section className="welcome-section">
         <div>
           <span className="eyebrow">
@@ -103,6 +258,7 @@ function Dashboard() {
       {/* =========================
           STATS
           ========================= */}
+
       <section className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon blue">
@@ -139,175 +295,224 @@ function Dashboard() {
       </section>
 
       {/* =========================
-          CHANNELS
-          ========================= */}
-      <section className="section-heading">
-        <div>
-          <h2>Channels</h2>
-
-          <p>
-            Select a channel to open the conversation.
-          </p>
-        </div>
-      </section>
-
-      <section className="conversation-grid">
-        {channels.map((channel) => {
-          const isSelected =
-            selectedChannel.id === channel.id;
-
-          return (
-            <button
-              key={channel.id}
-              type="button"
-              className={`conversation-card ${
-                isSelected ? "selected" : ""
-              }`}
-              onClick={() =>
-                setSelectedChannel(channel)
-              }
-            >
-              <div className="conversation-icon">
-                <Hash size={20} />
-              </div>
-
-              <div className="conversation-content">
-                <h3>#{channel.name}</h3>
-
-                <strong>
-                  {channel.name === "general"
-                    ? "General Team Discussion"
-                    : channel.name === "development"
-                    ? "Development"
-                    : channel.name === "design"
-                    ? "Design"
-                    : "Random"}
-                </strong>
-
-                <p>{channel.description}</p>
-              </div>
-
-              <div className="card-arrow">
-                <ArrowRight size={17} />
-              </div>
-            </button>
-          );
-        })}
-      </section>
-
-      {/* =========================
           ACTIVE CONVERSATION
           ========================= */}
-      <section className="dashboard-conversation">
-        <Conversation
-          channel={selectedChannel}
-          messages={currentMessages}
-          onSendMessage={handleSendMessage}
-        />
-      </section>
+
+      {selectedDM ? (
+        <section className="dashboard-conversation">
+          <DirectMessage
+            user={selectedDM}
+            messages={currentDMMessages}
+            onSendMessage={handleSendDM}
+          />
+        </section>
+      ) : (
+        <>
+          {/* =========================
+              CHANNELS
+              ========================= */}
+
+          <section className="section-heading">
+            <div>
+              <h2>Channels</h2>
+
+              <p>
+                Select a channel to open the
+                conversation.
+              </p>
+            </div>
+          </section>
+
+          <section className="conversation-grid">
+            {channels.map((channel) => {
+              const isSelected =
+                selectedChannel.id ===
+                channel.id;
+
+              return (
+                <button
+                  key={channel.id}
+                  type="button"
+                  className={`conversation-card ${
+                    isSelected
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    handleChannelSelection(
+                      channel
+                    )
+                  }
+                >
+                  <div className="conversation-icon">
+                    <Hash size={20} />
+                  </div>
+
+                  <div className="conversation-content">
+                    <h3>
+                      #{channel.name}
+                    </h3>
+
+                    <strong>
+                      {channel.name ===
+                      "general"
+                        ? "General Team Discussion"
+                        : channel.name ===
+                          "development"
+                        ? "Development"
+                        : channel.name ===
+                          "design"
+                        ? "Design"
+                        : "Random"}
+                    </strong>
+
+                    <p>
+                      {channel.description}
+                    </p>
+                  </div>
+
+                  <div className="card-arrow">
+                    <ArrowRight size={17} />
+                  </div>
+                </button>
+              );
+            })}
+          </section>
+
+          {/* =========================
+              CHANNEL CONVERSATION
+              ========================= */}
+
+          <section className="dashboard-conversation">
+            <Conversation
+              channel={selectedChannel}
+              messages={currentChannelMessages}
+              onSendMessage={
+                handleSendChannelMessage
+              }
+            />
+          </section>
+        </>
+      )}
 
       {/* =========================
           RECENT CONVERSATIONS
           ========================= */}
-      <section className="section-heading">
-        <div>
-          <h2>Recent conversations</h2>
 
-          <p>
-            Jump back into your team's latest discussions.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="text-button"
-        >
-          View all
-          <ArrowRight size={16} />
-        </button>
-      </section>
-
-      <section className="conversation-grid">
-        {recentConversations.map((conversation) => (
-          <div
-            className="conversation-card"
-            key={conversation.channel}
-          >
-            <div className="conversation-icon">
-              <Hash size={20} />
-            </div>
-
-            <div className="conversation-content">
-              <h3>
-                #{conversation.channel}
-              </h3>
-
-              <strong>
-                {conversation.title}
-              </strong>
+      {!selectedDM && (
+        <>
+          <section className="section-heading">
+            <div>
+              <h2>Recent conversations</h2>
 
               <p>
-                {conversation.description}
+                Jump back into your team's latest
+                discussions.
               </p>
-
-              <span>
-                {conversation.members} members
-              </span>
             </div>
 
-            <div className="card-arrow">
-              <ArrowRight size={17} />
+            <button
+              type="button"
+              className="text-button"
+            >
+              View all
+              <ArrowRight size={16} />
+            </button>
+          </section>
+
+          <section className="conversation-grid">
+            {recentConversations.map(
+              (conversation) => (
+                <div
+                  className="conversation-card"
+                  key={conversation.channel}
+                >
+                  <div className="conversation-icon">
+                    <Hash size={20} />
+                  </div>
+
+                  <div className="conversation-content">
+                    <h3>
+                      #{conversation.channel}
+                    </h3>
+
+                    <strong>
+                      {conversation.title}
+                    </strong>
+
+                    <p>
+                      {
+                        conversation.description
+                      }
+                    </p>
+
+                    <span>
+                      {conversation.members}{" "}
+                      members
+                    </span>
+                  </div>
+
+                  <div className="card-arrow">
+                    <ArrowRight size={17} />
+                  </div>
+                </div>
+              )
+            )}
+          </section>
+
+          {/* =========================
+              WORKSPACE ACTIVITY
+              ========================= */}
+
+          <section className="activity-panel">
+            <div className="section-heading compact">
+              <div>
+                <h2>
+                  Workspace activity
+                </h2>
+
+                <p>
+                  Latest activity across your
+                  workspace.
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
-      </section>
 
-      {/* =========================
-          WORKSPACE ACTIVITY
-          ========================= */}
-      <section className="activity-panel">
-        <div className="section-heading compact">
-          <div>
-            <h2>Workspace activity</h2>
+            <div className="activity-item">
+              <div className="avatar small">
+                A
+              </div>
 
-            <p>
-              Latest activity across your workspace.
-            </p>
-          </div>
-        </div>
+              <div>
+                <strong>Alex</strong>
 
-        <div className="activity-item">
-          <div className="avatar small">
-            A
-          </div>
+                <span>
+                  started a discussion in
+                  #development
+                </span>
+              </div>
 
-          <div>
-            <strong>Alex</strong>
+              <time>10 min ago</time>
+            </div>
 
-            <span>
-              started a discussion in #development
-            </span>
-          </div>
+            <div className="activity-item">
+              <div className="avatar small">
+                R
+              </div>
 
-          <time>10 min ago</time>
-        </div>
+              <div>
+                <strong>Rahul</strong>
 
-        <div className="activity-item">
-          <div className="avatar small">
-            R
-          </div>
+                <span>
+                  shared an update in #design
+                </span>
+              </div>
 
-          <div>
-            <strong>Rahul</strong>
-
-            <span>
-              shared an update in #design
-            </span>
-          </div>
-
-          <time>32 min ago</time>
-        </div>
-      </section>
+              <time>32 min ago</time>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
