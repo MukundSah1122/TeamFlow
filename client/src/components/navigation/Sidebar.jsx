@@ -1,9 +1,12 @@
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+
 import {
   Hash,
-  MessageCircle,
   Settings,
   Plus,
   ChevronDown,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -14,8 +17,19 @@ import {
 } from "../../data/mockData";
 
 function Sidebar() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <aside className="sidebar">
+      {/* =========================
+          WORKSPACE HEADER
+          ========================= */}
       <div className="workspace-header">
         <div className="workspace-logo">
           {workspace.initials}
@@ -29,11 +43,17 @@ function Sidebar() {
         <ChevronDown size={17} />
       </div>
 
+      {/* =========================
+          CHANNELS
+          ========================= */}
       <div className="sidebar-section">
         <div className="sidebar-section-header">
           <span>CHANNELS</span>
 
-          <button className="icon-button small">
+          <button
+            type="button"
+            className="icon-button small"
+          >
             <Plus size={15} />
           </button>
         </div>
@@ -41,6 +61,7 @@ function Sidebar() {
         {channels.map((channel, index) => (
           <button
             key={channel.id}
+            type="button"
             className={`sidebar-item ${
               index === 0 ? "active" : ""
             }`}
@@ -51,17 +72,27 @@ function Sidebar() {
         ))}
       </div>
 
+      {/* =========================
+          DIRECT MESSAGES
+          ========================= */}
       <div className="sidebar-section">
         <div className="sidebar-section-header">
           <span>DIRECT MESSAGES</span>
 
-          <button className="icon-button small">
+          <button
+            type="button"
+            className="icon-button small"
+          >
             <Plus size={15} />
           </button>
         </div>
 
         {directMessages.map((user) => (
-          <button key={user.id} className="sidebar-item">
+          <button
+            key={user.id}
+            type="button"
+            className="sidebar-item"
+          >
             <span
               className={`presence-dot ${user.status}`}
             />
@@ -71,12 +102,20 @@ function Sidebar() {
         ))}
       </div>
 
+      {/* =========================
+          SIDEBAR BOTTOM
+          ========================= */}
       <div className="sidebar-bottom">
-        <button className="sidebar-item">
+        {/* Settings */}
+        <button
+          type="button"
+          className="sidebar-item"
+        >
           <Settings size={17} />
           <span>Settings</span>
         </button>
 
+        {/* Current User */}
         <div className="sidebar-user">
           <div className="avatar">
             {currentUser.initials}
@@ -84,12 +123,23 @@ function Sidebar() {
 
           <div>
             <strong>{currentUser.name}</strong>
+
             <span>
               <span className="online-indicator" />
               Online
             </span>
           </div>
         </div>
+
+        {/* Logout */}
+        <button
+          type="button"
+          className="sidebar-logout-button"
+          onClick={handleLogout}
+        >
+          <LogOut size={16} />
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
   );
