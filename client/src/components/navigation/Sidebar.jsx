@@ -16,7 +16,10 @@ import {
   currentUser,
 } from "../../data/mockData";
 
-function Sidebar() {
+function Sidebar({
+  selectedChannel,
+  onChannelSelect,
+}) {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -27,9 +30,7 @@ function Sidebar() {
 
   return (
     <aside className="sidebar">
-      {/* =========================
-          WORKSPACE HEADER
-          ========================= */}
+      {/* Workspace Header */}
       <div className="workspace-header">
         <div className="workspace-logo">
           {workspace.initials}
@@ -43,9 +44,7 @@ function Sidebar() {
         <ChevronDown size={17} />
       </div>
 
-      {/* =========================
-          CHANNELS
-          ========================= */}
+      {/* Channels */}
       <div className="sidebar-section">
         <div className="sidebar-section-header">
           <span>CHANNELS</span>
@@ -58,23 +57,29 @@ function Sidebar() {
           </button>
         </div>
 
-        {channels.map((channel, index) => (
-          <button
-            key={channel.id}
-            type="button"
-            className={`sidebar-item ${
-              index === 0 ? "active" : ""
-            }`}
-          >
-            <Hash size={17} />
-            <span>{channel.name}</span>
-          </button>
-        ))}
+        {channels.map((channel) => {
+          const isActive =
+            selectedChannel?.id === channel.id;
+
+          return (
+            <button
+              key={channel.id}
+              type="button"
+              className={`sidebar-item ${
+                isActive ? "active" : ""
+              }`}
+              onClick={() =>
+                onChannelSelect(channel)
+              }
+            >
+              <Hash size={17} />
+              <span>{channel.name}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* =========================
-          DIRECT MESSAGES
-          ========================= */}
+      {/* Direct Messages */}
       <div className="sidebar-section">
         <div className="sidebar-section-header">
           <span>DIRECT MESSAGES</span>
@@ -102,11 +107,8 @@ function Sidebar() {
         ))}
       </div>
 
-      {/* =========================
-          SIDEBAR BOTTOM
-          ========================= */}
+      {/* Bottom Section */}
       <div className="sidebar-bottom">
-        {/* Settings */}
         <button
           type="button"
           className="sidebar-item"
@@ -115,7 +117,6 @@ function Sidebar() {
           <span>Settings</span>
         </button>
 
-        {/* Current User */}
         <div className="sidebar-user">
           <div className="avatar">
             {currentUser.initials}
@@ -131,7 +132,6 @@ function Sidebar() {
           </div>
         </div>
 
-        {/* Logout */}
         <button
           type="button"
           className="sidebar-logout-button"
