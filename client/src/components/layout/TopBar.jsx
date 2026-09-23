@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   Search,
   Bell,
@@ -5,6 +7,9 @@ import {
   User,
   Hash,
   MessageCircle,
+  AtSign,
+  CheckCircle,
+  X,
 } from "lucide-react";
 
 import {
@@ -19,8 +24,19 @@ function TopBar({
   searchQuery,
   onSearchChange,
   onSearchSelect,
+  notifications,
+  unreadNotificationCount,
+  onNotificationRead,
+  onMarkAllNotificationsRead,
 }) {
+  const [isNotificationOpen, setIsNotificationOpen] =
+    useState(false);
+
   const query = searchQuery.trim().toLowerCase();
+
+  // =========================
+  // SEARCH RESULTS
+  // =========================
 
   const peopleResults = query
     ? directMessages.filter((user) =>
@@ -103,6 +119,22 @@ function TopBar({
     channelResults.length > 0 ||
     messageResults.length > 0;
 
+  // =========================
+  // NOTIFICATION HANDLERS
+  // =========================
+
+  const handleNotificationClick = (
+    notification
+  ) => {
+    onNotificationRead(notification.id);
+  };
+
+  const handleNotificationToggle = () => {
+    setIsNotificationOpen(
+      (currentState) => !currentState
+    );
+  };
+
   return (
     <header className="topbar">
       {/* =========================
@@ -137,9 +169,7 @@ function TopBar({
           Ctrl K
         </span>
 
-        {/* =========================
-            SEARCH RESULTS
-            ========================= */}
+        {/* SEARCH RESULTS */}
         {query && (
           <div className="search-results">
             {!hasResults ? (
@@ -157,7 +187,6 @@ function TopBar({
               </div>
             ) : (
               <>
-                {/* PEOPLE */}
                 {peopleResults.length > 0 && (
                   <div className="search-result-group">
                     <div className="search-result-heading">
@@ -198,7 +227,6 @@ function TopBar({
                   </div>
                 )}
 
-                {/* CHANNELS */}
                 {channelResults.length > 0 && (
                   <div className="search-result-group">
                     <div className="search-result-heading">
@@ -237,7 +265,6 @@ function TopBar({
                   </div>
                 )}
 
-                {/* MESSAGES */}
                 {messageResults.length > 0 && (
                   <div className="search-result-group">
                     <div className="search-result-heading">
@@ -297,15 +324,133 @@ function TopBar({
           <HelpCircle size={20} />
         </button>
 
-        <button
-          type="button"
-          className="icon-button notification-button"
-          title="Notifications"
-        >
-          <Bell size={20} />
-          <span className="notification-dot" />
-        </button>
+        {/* =========================
+            NOTIFICATIONS
+            ========================= */}
+        <div className="notification-wrapper">
+          <button
+            type="button"
+            className="icon-button notification-button"
+            title="Notifications"
+            onClick={handleNotificationToggle}
+          >
+            <Bell size={20} />
 
+            {unreadNotificationCount > 0 && (
+              <span className="notification-dot" />
+            )}
+          </button>
+
+          {isNotificationOpen && (
+            <div className="notification-panel">
+              <div className="notification-header">
+                <div>
+                  <h3>Notifications</h3>
+
+                  <span>
+                    {unreadNotificationCount} unread
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="notification-close"
+                  onClick={() =>
+                    setIsNotificationOpen(false)
+                  }
+                  title="Close"
+                >
+                  <X size={17} />
+                </button>
+              </div>
+
+              <div className="notification-list">
+                {notifications.length === 0 ? (
+                  <div className="notification-empty">
+                    <CheckCircle size={24} />
+
+                    <strong>
+                      You're all caught up
+                    </strong>
+
+                    <span>
+                      No new notifications.
+                    </span>
+                  </div>
+                ) : (
+                  notifications.map(
+                    (notification) => (
+                      <button
+                        key={notification.id}
+                        type="button"
+                        className={`notification-item ${
+                          notification.read
+                            ? "read"
+                            : "unread"
+                        }`}
+                        onClick={() =>
+                          handleNotificationClick(
+                            notification
+                          )
+                        }
+                      >
+                        <div className="notification-icon">
+                          {notification.type ===
+                          "mention" ? (
+                            <AtSign size={17} />
+                          ) : notification.type ===
+                            "message" ? (
+                            <MessageCircle
+                              size={17}
+                            />
+                          ) : (
+                            <Bell size={17} />
+                          )}
+                        </div>
+
+                        <div className="notification-content">
+                          <strong>
+                            {notification.title}
+                          </strong>
+
+                          <span>
+                            {
+                              notification.description
+                            }
+                          </span>
+
+                          <small>
+                            {notification.time}
+                          </small>
+                        </div>
+
+                        {!notification.read && (
+                          <span className="notification-unread-dot" />
+                        )}
+                      </button>
+                    )
+                  )
+                )}
+              </div>
+
+              {unreadNotificationCount > 0 && (
+                <div className="notification-footer">
+                  <button
+                    type="button"
+                    onClick={
+                      onMarkAllNotificationsRead
+                    }
+                  >
+                    <CheckCircle size={15} />
+                    Mark all as read
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* USER */}
         <div className="topbar-user">
           <div className="avatar">
             {currentUser.initials}

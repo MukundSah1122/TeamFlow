@@ -269,3 +269,33 @@ export const directMessageHistory = {
     },
   ],
 };
+
+export const notifications = [
+  {
+    id: "notification-001",
+    type: "mention",
+    title: "Alex mentioned you",
+    description:
+      "You were mentioned in #development.",
+    time: "2 min ago",
+    read: false,
+  },
+  {
+    id: "notification-002",
+    type: "message",
+    title: "Rahul sent you a message",
+    description:
+      "You have a new direct message from Rahul.",
+    time: "5 min ago",
+    read: false,
+  },
+  {
+    id: "notification-003",
+    type: "activity",
+    title: "Sarah shared an update",
+    description:
+      "Sarah updated the design discussion.",
+    time: "18 min ago",
+    read: true,
+  },
+];
