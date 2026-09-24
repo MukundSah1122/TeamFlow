@@ -147,21 +147,30 @@ function Sidebar({
           <span>Settings</span>
         </button>
 
-        <div className="sidebar-user">
-          <div className="avatar">
-            {currentUser.initials}
-          </div>
+        <div
+  className="sidebar-user"
+  onClick={() => navigate("/profile")}
+  role="button"
+  tabIndex={0}
+  onKeyDown={(event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      navigate("/profile");
+    }
+  }}
+>
+  <div className="avatar">
+    {currentUser.initials}
+  </div>
 
-          <div>
-            <strong>{currentUser.name}</strong>
+  <div>
+    <strong>{currentUser.name}</strong>
 
-            <span>
-              <span className="online-indicator" />
-              Online
-            </span>
-          </div>
-        </div>
-
+    <span>
+      <span className="online-indicator" />
+      Online
+    </span>
+  </div>
+</div>
         <button
           type="button"
           className="sidebar-logout-button"

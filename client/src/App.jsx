@@ -11,6 +11,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import WorkspaceSelection from "./pages/workspace/WorkspaceSelection";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import Profile from "./pages/profile/Profile";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
   <Route element={<AppLayout />}>
     <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/profile" element={<Profile />} />
   </Route>
 </Route>
         {/* Default route */}

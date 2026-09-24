@@ -1,3 +1,5 @@
+import EmptyState from "../common/EmptyState";
+
 import {
   Send,
   Users,
@@ -82,23 +84,13 @@ function Conversation({
           ========================= */}
       <div className="conversation-messages">
         {messages.length === 0 ? (
-          <div className="conversation-empty">
-  <div className="conversation-empty-icon">
-    <Hash size={25} />
-  </div>
-
-  <h3>
-    Welcome to #{channel.name}
-  </h3>
-
-  <p>
-    {channel.description}
-  </p>
-
-  <span>
-    Start the conversation by sending the first message.
-  </span>
-</div>
+  <EmptyState
+  title={`Welcome to #${channel.name}`}
+  message={
+    channel.description ||
+    "Start the conversation and collaborate with your team."
+  }
+/>
         ) : (
           messages.map((message) => {
             const isCurrentUser =

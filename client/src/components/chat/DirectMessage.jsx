@@ -1,8 +1,9 @@
+import EmptyState from "../common/EmptyState";
+
 import {
   Send,
   Smile,
   Paperclip,
-  MessageCircle,
 } from "lucide-react";
 
 import { currentUser } from "../../data/mockData";
@@ -76,25 +77,11 @@ function DirectMessage({
           ========================= */}
       <div className="conversation-messages">
         {messages.length === 0 ? (
-          <div className="conversation-empty">
-            <div className="conversation-empty-icon">
-              <MessageCircle size={25} />
-            </div>
-
-            <h3>
-              Start a conversation with {user.name}
-            </h3>
-
-            <p>
-              This is the beginning of your direct
-              message history with {user.name}.
-            </p>
-
-            <span>
-              Send a message to start chatting.
-            </span>
-          </div>
-        ) : (
+  <EmptyState
+    title={`Start a conversation with ${user.name}`}
+    message={`This is the beginning of your direct message history with ${user.name}. Send a message to start chatting.`}
+  />
+) : (
           messages.map((message) => {
             const isCurrentUser =
               message.userId === currentUser.id;
